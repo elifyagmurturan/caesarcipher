@@ -1,3 +1,4 @@
+const port = process.argv[2];
 const {v1: uuidv1} = require('uuid');
 const Blockchain = require('./blockchain');
 const express = require('express');
@@ -45,5 +46,5 @@ app.get('/mine', function(req, res){
 });
 
 app.listen(3000, function() {
-    console.log('Listening on port 3000');
+    console.log(`Listening on port ${port}`);
 });
