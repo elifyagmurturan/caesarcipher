@@ -17,16 +17,20 @@ app.get('/blockchain', function(req, res){
     res.send(bitcoin);
 });
 
-app.post('/transaction', function(req, res){ 
-    const blockIndex = bitcoin.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
+
+app.post('/transaction', function(req, res){
+    const newTransaction = req.body; 
+    const blockIndex = bitcoin.createNewTransaction(newTransaction.amount, newTransaction.sender, newTransaction.recipient);
     res.json({note: `Transaction will be added in block ${blockIndex}`});
 });
+
 
 app.post('/register-and-broadcast-node', function(req, res){
     const newNodeUrl = req.body.newNodeUrl;
     if(bitcoin.networkNodes.indexOf(newNodeUrl) == -1){
         bitcoin.networkNodes.push(newNodeUrl);
     }
+    const regNodesPromises = [];
     bitcoin.networkNodes.forEach(networkNodeUrl => {
         const requestOptions = {
             uri: networkNodeUrl + '/register-node',
@@ -42,9 +46,10 @@ app.post('/register-and-broadcast-node', function(req, res){
             method: 'POST',
             body: {allNetworkNodes: [...bitcoin.networkNodes, bitcoin.currentNodeUrl]},
             json: true
-        }
+        };
+        return rp(bulkRegisterOptions);
     })
-    return rp(bulkRegisterOptions).then(data => {
+    .then(data => {
         res.json({note: 'New Node registered with network successfully'});
     });
 });
